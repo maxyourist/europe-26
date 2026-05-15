@@ -1,0 +1,2864 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Europe '26 · Itinerary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0c0c10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    font-family: Inter, system-ui, sans-serif;
+    color: #fff;
+    background: #06060a;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { min-height: 100vh; min-height: 100dvh; }
+  .day-strip::-webkit-scrollbar { display: none; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+  }
+  .leaflet-container { background: #d3dadd; font-family: "Geist Mono", ui-monospace, monospace; }
+  .leaflet-control-attribution { background: rgba(0,0,0,0.55) !important; color: rgba(255,255,255,0.4) !important; font-size: 9px !important; padding: 2px 6px !important; }
+  .leaflet-control-attribution a { color: rgba(255,255,255,0.55) !important; }
+  .city-pin { pointer-events: auto; cursor: pointer; }
+  .city-pin .dot { box-shadow: 0 0 0 2px rgba(0,0,0,0.5), 0 0 12px rgba(0,0,0,0.6); }
+  .city-pin.active .dot { box-shadow: 0 0 0 2px rgba(0,0,0,0.5), 0 0 0 5px currentColor; }
+  .city-pin .label { font-family: "Instrument Serif", Georgia, serif; font-style: italic; text-shadow: 0 0 6px rgba(0,0,0,0.85), 0 0 12px rgba(0,0,0,0.7); white-space: nowrap; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script>
+// Europe trip — May 15-25, 2026
+window.TRIP = {
+  title: "Europe '26",
+  subtitle: "Eleven days · Five cities",
+  startDate: "2026-05-15",
+  endDate: "2026-05-25",
+  today: "2026-05-14", // day before departure
+  days: [
+    {
+      n: 1,
+      date: "2026-05-15",
+      dow: "Fri",
+      city: "Depart LAX",
+      cityShort: "Flight",
+      country: "→ London",
+      theme: "transit",
+      journey: { from: "Los Angeles", fromCode: "LAX", to: "London", toCode: "LHR", mode: "flight", depart: "6:00 PM", arrive: "12:45 PM", arriveOffset: "+1", duration: "10h 30m" },
+      weather: { hi: 17, lo: 9, icon: "cloud", cond: "Overcast on arrival", precip: 30, wind: 12 },
+      events: [
+        { time: "—", title: "Pack & airport", kind: "task", note: "Last call — passports, adapters, meds" },
+        { time: "6:00PM", title: "Depart for London", kind: "flight", note: "Overnight crossing · arrives 16 May 12:45 PM" }
+      ]
+    },
+    {
+      n: 2,
+      date: "2026-05-16",
+      dow: "Sat",
+      city: "London",
+      cityShort: "London",
+      country: "United Kingdom",
+      theme: "london",
+      weather: { hi: 18, lo: 10, icon: "drizzle", cond: "Mist clearing, light drizzle", precip: 55, wind: 14 },
+      events: [
+        { time: "12:45", title: "Touchdown LHR", kind: "flight", note: "Through customs · Heathrow Express to centre" },
+        { time: "15:00", title: "London afternoon", kind: "city", note: "Walk · pub lunch · whatever calls" },
+        { time: "20:00", title: "Fly LHR → FCO", kind: "flight", note: "Lands Rome 23:20" },
+        { time: "23:20", title: "Land in Rome", kind: "flight",
+          arrival: { city: "Rome", country: "Italia", time: "NIGHT",
+            weather: { hi: 14, icon: "sun", cond: "Clear & cool, light breeze" } } },
+        { time: "00:30", title: "Check in · Hotel Palazzo", kind: "hotel", note: "Late arrival, keys at front desk" }
+      ]
+    },
+    {
+      n: 3,
+      date: "2026-05-17",
+      dow: "Sun",
+      city: "Rome",
+      cityShort: "Rome",
+      country: "Italia",
+      theme: "rome",
+      weather: { hi: 24, lo: 13, icon: "sun", cond: "Bright sun, gentle breeze", precip: 5, wind: 8 },
+      events: [
+        { time: "BY 12:00", title: "Check out · stash bags", kind: "hotel", note: "Leave luggage at Palazzo desk" },
+        { time: "12:00", title: "Roman holiday", kind: "city", note: "Espresso · ruins · slow lunch" },
+        { time: "BY 12:00", title: "Pick up car · FCO", kind: "drive", note: "⚠ Rental desk closes at noon — don't miss it", flag: true },
+        { time: "PM", title: "Drive to Tuscany", kind: "drive", note: "≈ 3h via E35 · golden hour through Umbria" },
+        { time: "EVE", title: "Kraemer compound", kind: "hotel", note: "Family arrival · dinner at the house",
+          arrival: { city: "Tuscany", country: "Toscana", time: "EVENING",
+            weather: { hi: 15, icon: "sun", cond: "Clear, cool country evening" } } }
+      ]
+    },
+    {
+      n: 4,
+      date: "2026-05-18",
+      dow: "Mon",
+      city: "Tuscany",
+      cityShort: "Siena",
+      country: "Toscana",
+      theme: "tuscany",
+      weather: { hi: 23, lo: 12, icon: "sun", cond: "Clear & warm, cool evening", precip: 5, wind: 9 },
+      events: [
+        { time: "AM", title: "Slow morning", kind: "city", note: "Coffee on the terrace" },
+        { time: "PM", title: "Drive to Siena", kind: "drive", note: "≈ 1h south through the Crete" },
+        { time: "20:00", title: "Dinner in Siena?", kind: "food", note: "Pici cacio e pepe · book ahead" }
+      ]
+    },
+    {
+      n: 5,
+      date: "2026-05-19",
+      dow: "Tue",
+      city: "Tuscany",
+      cityShort: "Florence",
+      country: "Toscana",
+      theme: "tuscany",
+      weather: { hi: 25, lo: 14, icon: "sun", cond: "Hot in the city, bring water", precip: 5, wind: 7 },
+      events: [
+        { time: "AM", title: "Drive to Firenze", kind: "drive", note: "Park outside the ZTL" },
+        { time: "DAY", title: "Florence day", kind: "city", note: "Uffizi · Duomo · gelato · repeat" },
+        { time: "EVE", title: "Back to the compound", kind: "drive" }
+      ]
+    },
+    {
+      n: 6,
+      date: "2026-05-20",
+      dow: "Wed",
+      city: "Tuscany",
+      cityShort: "Bologna",
+      country: "Emilia-Romagna",
+      theme: "tuscany",
+      weather: { hi: 24, lo: 13, icon: "partly", cond: "Sun with afternoon clouds", precip: 15, wind: 10 },
+      events: [
+        { time: "AM", title: "Drive north to Bologna", kind: "drive", note: "≈ 1h45" },
+        { time: "DAY", title: "Bologna · Modena?", kind: "city", note: "Tortellini · balsamic cellars · Lambrusco" },
+        { time: "EVE", title: "Back to the compound", kind: "drive" }
+      ]
+    },
+    {
+      n: 7,
+      date: "2026-05-21",
+      dow: "Thu",
+      city: "Tuscany",
+      cityShort: "Compound",
+      country: "Toscana",
+      theme: "tuscany",
+      weather: { hi: 24, lo: 13, icon: "sun", cond: "Postcard day", precip: 5, wind: 8 },
+      events: [
+        { time: "ALL DAY", title: "Tuscany, no plans", kind: "city", note: "Read, swim, nap, eat, repeat" }
+      ]
+    },
+    {
+      n: 8,
+      date: "2026-05-22",
+      dow: "Fri",
+      city: "→ Paros",
+      cityShort: "Travel",
+      country: "Tuscany → Paros",
+      theme: "transit",
+      journey: { from: "Tuscany", fromCode: "FCO", to: "Paros", toCode: "PMS", mode: "flight+ferry", depart: "9:30 AM", arrive: "5:55 PM", duration: "8h 25m" },
+      weather: { hi: 22, lo: 16, icon: "sun", cond: "Aegean blue · breezy", precip: 5, wind: 18 },
+      events: [
+        { time: "05:30", title: "Wake · drive to Rome", kind: "drive", note: "Early start, coffee on the road" },
+        { time: "07:00", title: "Drop car at FCO", kind: "drive", note: "⚠ Hard 7 AM return", flag: true },
+        { time: "09:30", title: "Fly FCO → ATH", kind: "flight", note: "Lands Athens 12:30" },
+        { time: "14:20", title: "Ferry to Paros", kind: "ferry", note: "Piraeus → Paros · arrives 17:55" },
+        { time: "18:30", title: "Kanales Rooms & Suites", kind: "hotel", note: "Check in · sunset on the terrace",
+          arrival: { city: "Paros", country: "Cyclades", time: "EVENING",
+            weather: { hi: 21, icon: "sun", cond: "Sunset, steady meltemi breeze" } } }
+      ]
+    },
+    {
+      n: 9,
+      date: "2026-05-23",
+      dow: "Sat",
+      city: "Paros",
+      cityShort: "Paros",
+      country: "Cyclades",
+      theme: "paros",
+      weather: { hi: 23, lo: 17, icon: "sun", cond: "Cycladic sun, steady meltemi", precip: 0, wind: 22 },
+      events: [
+        { time: "ALL DAY", title: "Paros, slow", kind: "city", note: "Naoussa · beaches · long lunch" }
+      ]
+    },
+    {
+      n: 10,
+      date: "2026-05-24",
+      dow: "Sun",
+      city: "→ Paris",
+      cityShort: "Paris",
+      country: "Greece → France",
+      theme: "paris",
+      journey: { from: "Paros", fromCode: "PMS", to: "Paris", toCode: "CDG", mode: "flight", depart: "4:05 PM", arrive: "8:35 PM", duration: "4h 30m" },
+      weather: { hi: 19, lo: 11, icon: "partly", cond: "Soft light, jacket weather", precip: 20, wind: 11 },
+      events: [
+        { time: "AM", title: "Slow morning · check out", kind: "hotel" },
+        { time: "16:05", title: "Fly PAS → CDG", kind: "flight", note: "Lands 20:35",
+          arrival: { city: "Paris", country: "France", time: "EVENING",
+            weather: { hi: 13, icon: "partly", cond: "Cool dusk, light jacket" } } },
+        { time: "22:00", title: "Dinner in Paris", kind: "food", note: "Late seating · pick a spot in the 11e" },
+        { time: "LATE", title: "Hotel check in", kind: "hotel" }
+      ]
+    },
+    {
+      n: 11,
+      date: "2026-05-25",
+      dow: "Mon",
+      city: "Paris",
+      cityShort: "Home",
+      country: "→ Home",
+      theme: "paris",
+      weather: { hi: 20, lo: 12, icon: "sun", cond: "Warm send-off", precip: 10, wind: 9 },
+      events: [
+        { time: "AM", title: "Croissant & walk", kind: "food", note: "One last espresso" },
+        { time: "13:30", title: "Fly home", kind: "flight", note: "Wheels up · trip complete" }
+      ]
+    }
+  ]
+};
+  </script>
+  <script>
+// Live weather via Open-Meteo (no API key, free, CORS-friendly).
+// Fetches per-city daily forecasts for the trip date range, caches 6h in
+// localStorage, and merges into the day objects at render time.
+
+(function() {
+  const COORDS = {
+    london:  { lat: 51.5074, lon:  -0.1278 },
+    rome:    { lat: 41.9028, lon:  12.4964 },
+    tuscany: { lat: 43.3188, lon:  11.3308 }, // Siena
+    paros:   { lat: 37.0856, lon:  25.1500 },
+    paris:   { lat: 48.8566, lon:   2.3522 },
+  };
+  const CACHE_KEY = 'europe26-weather-v1';
+  const TTL_MS    = 6 * 60 * 60 * 1000; // 6h
+
+  // WMO weather code → simple icon family (matches WeatherGlyph kinds)
+  function codeToIcon(code) {
+    if (code === 0) return 'sun';
+    if (code <= 3)  return 'partly';
+    if (code <= 48) return 'cloud';
+    return 'drizzle';
+  }
+  // WMO code → short condition phrase
+  const CODE_COND = {
+    0:  'Clear skies',
+    1:  'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+    45: 'Fog', 48: 'Fog',
+    51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle',
+    56: 'Freezing drizzle', 57: 'Freezing drizzle',
+    61: 'Light rain', 63: 'Rain', 65: 'Heavy rain',
+    66: 'Freezing rain', 67: 'Freezing rain',
+    71: 'Light snow', 73: 'Snow', 75: 'Heavy snow', 77: 'Snow grains',
+    80: 'Light showers', 81: 'Showers', 82: 'Heavy showers',
+    85: 'Snow showers', 86: 'Snow showers',
+    95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm',
+  };
+
+  async function fetchOne(c, start, end) {
+    const url = `https://api.open-meteo.com/v1/forecast`
+      + `?latitude=${c.lat}&longitude=${c.lon}`
+      + `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code,wind_speed_10m_max`
+      + `&start_date=${start}&end_date=${end}&timezone=auto`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('weather ' + res.status);
+    const data = await res.json();
+    return data.daily;
+  }
+
+  window.loadWeather = async function(start, end) {
+    // cache hit?
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached.fetchedAt && (Date.now() - cached.fetchedAt) < TTL_MS
+            && cached.start === start && cached.end === end) {
+          return cached.data;
+        }
+      }
+    } catch {}
+
+    const keys = Object.keys(COORDS);
+    const out = {};
+    await Promise.all(keys.map(async (k) => {
+      try { out[k] = await fetchOne(COORDS[k], start, end); }
+      catch (e) { console.warn('weather miss', k, e); }
+    }));
+
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        fetchedAt: Date.now(), start, end, data: out,
+      }));
+    } catch {}
+    return out;
+  };
+
+  // Merge fetched daily forecast into each day's `weather` object. Transit
+  // days resolve to their journey destination so the forecast matches where
+  // the day ends up.
+  window.mergeWeather = function(days, weatherData) {
+    if (!weatherData) return days;
+    return days.map(d => {
+      let key = d.theme;
+      if ((!COORDS[key]) && d.journey) {
+        key = d.journey.to.toLowerCase();
+      }
+      const wx = weatherData[key];
+      if (!wx || !wx.time) return d;
+      const i = wx.time.indexOf(d.date);
+      if (i < 0) return d;
+      return {
+        ...d,
+        weather: {
+          hi:     Math.round(wx.temperature_2m_max[i]),
+          lo:     Math.round(wx.temperature_2m_min[i]),
+          icon:   codeToIcon(wx.weather_code[i]),
+          cond:   CODE_COND[wx.weather_code[i]] || 'Mild',
+          precip: Math.round(wx.precipitation_probability_max[i] || 0),
+          wind:   Math.round(wx.wind_speed_10m_max[i] || 0),
+          live:   true,
+        },
+      };
+    });
+  };
+})();
+  </script>
+  <script type="text/babel">
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  // Auto-inject a rail toggle when a <deck-stage> is on the page. The
+  // toggle drives the deck's per-viewer _railVisible via window message;
+  // state is mirrored from the same localStorage key the deck reads so
+  // the control reflects reality across reloads. The mechanism is the
+  // message — authors who want custom placement can post it directly
+  // and pass noDeckControls to suppress this one.
+  const hasDeckStage = React.useMemo(
+    () => typeof document !== 'undefined' && !!document.querySelector('deck-stage'),
+    [],
+  );
+  // deck-stage enables its rail in connectedCallback, but this panel can
+  // mount before that element has upgraded. The initial read catches the
+  // common case; the listener covers mounting first. (Older deck-stage.js
+  // copies still wait for the host's __omelette_rail_enabled postMessage —
+  // same listener handles those.)
+  const [railEnabled, setRailEnabled] = React.useState(
+    () => hasDeckStage && !!document.querySelector('deck-stage')?._railEnabled,
+  );
+  React.useEffect(() => {
+    if (!hasDeckStage || railEnabled) return undefined;
+    const onMsg = (e) => {
+      if (e.data && e.data.type === '__omelette_rail_enabled') setRailEnabled(true);
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [hasDeckStage, railEnabled]);
+  const [railVisible, setRailVisible] = React.useState(() => {
+    try { return localStorage.getItem('deck-stage.railVisible') !== '0'; } catch (e) { return true; }
+  });
+  const toggleRail = (on) => {
+    setRailVisible(on);
+    window.postMessage({ type: '__deck_rail_visible', on }, '*');
+  };
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-noncommentable=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+          {hasDeckStage && railEnabled && !noDeckControls && (
+            <TweakSection label="Deck">
+              <TweakToggle label="Thumbnail rail" value={railVisible} onChange={toggleRail} />
+            </TweakSection>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+  </script>
+  <script type="text/babel">
+// Itinerary views — Hero, DayStrip, Weather, Schedule, BottomNav, MapView
+
+// ── theme palettes per city ─────────────────────────────────
+const PALETTES = {
+  transit: { ink: '#0c0c10', deep: '#1a1b22', accent: '#9aa0ad', text: '#ece9e0', sub: 'rgba(236,233,224,0.55)', tone: 'neutral' },
+  london:  { ink: '#0e141c', deep: '#243345', accent: '#9cc2e2', text: '#eef2f8', sub: 'rgba(238,242,248,0.55)', tone: 'cool' },
+  rome:    { ink: '#1a0e08', deep: '#3a2418', accent: '#e89770', text: '#fbf2e5', sub: 'rgba(251,242,229,0.55)', tone: 'warm' },
+  tuscany: { ink: '#15110a', deep: '#322817', accent: '#d8b663', text: '#fbf3dd', sub: 'rgba(251,243,221,0.55)', tone: 'warm' },
+  paros:   { ink: '#04141f', deep: '#0e3149', accent: '#69cae8', text: '#eff8ff', sub: 'rgba(239,248,255,0.6)',  tone: 'cool' },
+  paris:   { ink: '#120f1a', deep: '#2c2640', accent: '#c8b8e6', text: '#f3eef8', sub: 'rgba(243,238,248,0.55)', tone: 'cool' },
+};
+
+// ── time formatter ─────────────────────────────────────────
+// Returns { military, twelve } for any time string that contains a H:MM
+// (with optional AM/PM). Preserves prefixes like "BY ". Returns null if the
+// string is a label without a specific time (AM, PM, EVE, ALL DAY, LATE, etc).
+function formatTimePair(timeStr) {
+  if (!timeStr) return null;
+  const m = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = m[2];
+  const ampm = m[3] && m[3].toUpperCase();
+  let h24;
+  if (ampm === 'PM') h24 = (h % 12) + 12;
+  else if (ampm === 'AM') h24 = h % 12;
+  else h24 = h;
+  if (h24 > 23) return null;
+  const h12 = (h24 % 12 === 0) ? 12 : (h24 % 12);
+  const period = h24 < 12 ? 'AM' : 'PM';
+  const military = `${String(h24).padStart(2,'0')}:${min}`;
+  const twelve   = `${h12}:${min} ${period}`;
+  const prefix = timeStr.slice(0, m.index).trim();
+  const pre = prefix ? prefix + ' ' : '';
+  return { military: pre + military, twelve: pre + twelve };
+}
+
+// ── weather glyphs (hand-drawn, simple shapes only) ─────────
+function WeatherGlyph({ kind, size = 28, color = '#fff', secondary = 'rgba(255,255,255,0.5)' }) {
+  const s = size;
+  if (kind === 'sun') return (
+    <svg width={s} height={s} viewBox="0 0 32 32">
+      <circle cx="16" cy="16" r="6.5" fill={color} />
+      {[0,45,90,135,180,225,270,315].map(a => (
+        <rect key={a} x="15" y="2" width="2" height="4" rx="1" fill={color}
+              transform={`rotate(${a} 16 16)`} />
+      ))}
+    </svg>
+  );
+  if (kind === 'cloud') return (
+    <svg width={s} height={s} viewBox="0 0 32 32">
+      <ellipse cx="14" cy="20" rx="11" ry="6" fill={color} />
+      <circle cx="11" cy="16" r="5" fill={color} />
+      <circle cx="19" cy="14" r="6" fill={color} />
+    </svg>
+  );
+  if (kind === 'partly') return (
+    <svg width={s} height={s} viewBox="0 0 32 32">
+      <circle cx="11" cy="11" r="5.5" fill={color} />
+      <ellipse cx="19" cy="22" rx="10" ry="5.5" fill={secondary} />
+      <circle cx="16" cy="18" r="4.5" fill={secondary} />
+      <circle cx="23" cy="17" r="5" fill={secondary} />
+    </svg>
+  );
+  if (kind === 'drizzle') return (
+    <svg width={s} height={s} viewBox="0 0 32 32">
+      <ellipse cx="14" cy="14" rx="11" ry="5.5" fill={color} />
+      <circle cx="11" cy="11" r="4.5" fill={color} />
+      <circle cx="19" cy="10" r="5.5" fill={color} />
+      <line x1="9"  y1="22" x2="7"  y2="28" stroke={secondary} strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="15" y1="22" x2="13" y2="28" stroke={secondary} strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="21" y1="22" x2="19" y2="28" stroke={secondary} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+  return null;
+}
+
+// ── event kind glyphs ───────────────────────────────────────
+function KindGlyph({ kind, color }) {
+  const s = 14;
+  const stroke = { stroke: color, strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' };
+  if (kind === 'flight') return (
+    <svg width={s} height={s} viewBox="0 0 16 16"><path d="M2 9l5-1 3-6 1.5 0.5-1.5 6 4-0.8 1-0.2 0 1.5-4 1-1 4-1.5-0.5 1-4-5 1L2 9z" fill={color}/></svg>
+  );
+  if (kind === 'drive') return (
+    <svg width={s} height={s} viewBox="0 0 16 16"><rect x="2" y="7" width="12" height="5" rx="1" {...stroke}/><path d="M3 7l1.5-3h7L13 7" {...stroke}/><circle cx="5" cy="13" r="1" fill={color}/><circle cx="11" cy="13" r="1" fill={color}/></svg>
+  );
+  if (kind === 'hotel') return (
+    <svg width={s} height={s} viewBox="0 0 16 16"><path d="M2 13V5M14 13V8c0-1-1-2-2-2H6" {...stroke}/><path d="M2 9h12" {...stroke}/><circle cx="5" cy="8" r="1.3" fill={color}/></svg>
+  );
+  if (kind === 'food') return (
+    <svg width={s} height={s} viewBox="0 0 16 16"><path d="M3 2v5c0 1 0.5 1.5 1.5 1.5S6 8 6 7V2M4.5 9v5" {...stroke}/><path d="M11 2c-1 0-2 2-2 4s1 3 2 3v5" {...stroke}/></svg>
+  );
+  if (kind === 'ferry') return (
+    <svg width={s} height={s} viewBox="0 0 16 16"><path d="M2 11l1.5 3h9L14 11" {...stroke}/><path d="M3 11V7l5-3 5 3v4" {...stroke}/><path d="M8 4v3" {...stroke}/></svg>
+  );
+  if (kind === 'city') return (
+    <svg width={s} height={s} viewBox="0 0 16 16"><path d="M2 14V8l4-2v8M6 14V4l4-2v12M10 14V7l4 2v5" {...stroke}/></svg>
+  );
+  if (kind === 'task') return (
+    <svg width={s} height={s} viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="2" {...stroke}/><path d="M5.5 8l2 2 3-4" {...stroke}/></svg>
+  );
+  return <span style={{ width: s, height: s, display: 'inline-block' }} />;
+}
+
+// ── JOURNEY HEADER (transit days) ───────────────────────────
+// Boarding-pass style display for travel days. Top row: huge airport codes
+// either side, arched flight path with airplane between. Below: city names,
+// then a perforated divider with depart-time / duration / arrive-time in
+// monospace — like a ticket stub.
+function JourneyHeader({ journey, palette }) {
+  const modeLabel = (() => {
+    if (journey.mode === 'ferry') return 'Ferry';
+    if (journey.mode === 'flight+ferry') return 'Fly + ferry';
+    return 'Nonstop';
+  })();
+  return (
+    <div style={{ marginTop: 18, position: 'relative' }}>
+      {/* Airport codes row + flight path */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr auto',
+        alignItems: 'center',
+        gap: 12,
+      }}>
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif',
+          fontStyle: 'italic', fontWeight: 400,
+          fontSize: 46, lineHeight: 0.9, letterSpacing: '-0.02em',
+          color: palette.text,
+        }}>{journey.fromCode}</div>
+
+        {/* flight arc */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="100%" height="40" viewBox="0 0 120 40" preserveAspectRatio="none"
+               style={{ display: 'block', maxWidth: 180 }}>
+            <defs>
+              <linearGradient id="jrnArc" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%"   stopColor={palette.accent} stopOpacity="0.35"/>
+                <stop offset="50%"  stopColor={palette.accent} stopOpacity="0.9"/>
+                <stop offset="100%" stopColor={palette.accent} stopOpacity="0.35"/>
+              </linearGradient>
+            </defs>
+            {/* arc */}
+            <path d="M 4 32 Q 60 -10 116 32"
+                  fill="none" stroke="url(#jrnArc)" strokeWidth="1.2"
+                  strokeDasharray="2.5 2.5" strokeLinecap="round"/>
+            {/* origin dot */}
+            <circle cx="4" cy="32" r="2.4" fill={palette.accent}/>
+            <circle cx="4" cy="32" r="4.5" fill="none" stroke={palette.accent} strokeOpacity="0.4" strokeWidth="0.6"/>
+            {/* destination dot */}
+            <circle cx="116" cy="32" r="2.4" fill={palette.accent}/>
+            <circle cx="116" cy="32" r="4.5" fill="none" stroke={palette.accent} strokeOpacity="0.4" strokeWidth="0.6"/>
+            {/* airplane at apex */}
+            <g transform="translate(60 6) rotate(90)">
+              <path d="M0 -8 L1.6 1 L8 3 L8 4.5 L1 4 L0.5 9 L2 10 L2 11 L-2 11 L-2 10 L-0.5 9 L-1 4 L-8 4.5 L-8 3 L-1.6 1 Z"
+                    fill={palette.accent}/>
+            </g>
+          </svg>
+        </div>
+
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif',
+          fontStyle: 'italic', fontWeight: 400,
+          fontSize: 46, lineHeight: 0.9, letterSpacing: '-0.02em',
+          color: palette.text,
+          paddingRight: 4,
+        }}>{journey.toCode}</div>
+      </div>
+
+      {/* City names underneath codes */}
+      <div style={{
+        marginTop: 4,
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        gap: 8,
+      }}>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: palette.sub, textAlign: 'left',
+        }}>{journey.from}</div>
+        <div/>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: palette.sub, textAlign: 'right',
+        }}>{journey.to}</div>
+      </div>
+
+      {/* Perforated ticket-stub line */}
+      <div style={{
+        marginTop: 14, marginBottom: 12,
+        display: 'flex', alignItems: 'center', gap: 8,
+        opacity: 0.55,
+      }}>
+        <div style={{
+          width: 6, height: 6, borderRadius: 999,
+          background: palette.ink, boxShadow: `inset 0 0 0 1px ${palette.accent}55`,
+          marginLeft: -3,
+        }}/>
+        <div style={{
+          flex: 1, height: 1,
+          backgroundImage: `repeating-linear-gradient(90deg, ${palette.accent}55 0 4px, transparent 4px 8px)`,
+        }}/>
+        <div style={{
+          width: 6, height: 6, borderRadius: 999,
+          background: palette.ink, boxShadow: `inset 0 0 0 1px ${palette.accent}55`,
+          marginRight: -3,
+        }}/>
+      </div>
+
+      {/* Times + duration row */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'baseline',
+        gap: 10,
+      }}>
+        <div>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 8, letterSpacing: '0.22em', textTransform: 'uppercase',
+            color: palette.sub, marginBottom: 2,
+          }}>Depart</div>
+          {(() => {
+            const p = formatTimePair(journey.depart);
+            return (
+              <React.Fragment>
+                <div style={{
+                  fontFamily: '"Instrument Serif", Georgia, serif',
+                  fontStyle: 'italic', fontSize: 22, lineHeight: 1,
+                  color: palette.text,
+                }}>{p ? p.military : (journey.depart || '—')}</div>
+                {p && (
+                  <div style={{
+                    marginTop: 3,
+                    fontFamily: '"Geist Mono", ui-monospace, monospace',
+                    fontSize: 10, letterSpacing: '0.06em',
+                    color: palette.sub,
+                  }}>{p.twelve}</div>
+                )}
+              </React.Fragment>
+            );
+          })()}
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 8, letterSpacing: '0.22em', textTransform: 'uppercase',
+            color: palette.sub,
+          }}>{modeLabel}</div>
+          <div style={{
+            marginTop: 2,
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 11, letterSpacing: '0.12em',
+            color: palette.accent,
+            whiteSpace: 'nowrap',
+          }}>{journey.duration || ''}</div>
+        </div>
+
+        <div style={{ textAlign: 'right' }}>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 8, letterSpacing: '0.22em', textTransform: 'uppercase',
+            color: palette.sub, marginBottom: 2,
+          }}>Arrive {journey.arriveOffset || ''}</div>
+          {(() => {
+            const p = formatTimePair(journey.arrive);
+            return (
+              <React.Fragment>
+                <div style={{
+                  fontFamily: '"Instrument Serif", Georgia, serif',
+                  fontStyle: 'italic', fontSize: 22, lineHeight: 1,
+                  color: palette.text,
+                }}>{p ? p.military : (journey.arrive || '—')}</div>
+                {p && (
+                  <div style={{
+                    marginTop: 3,
+                    fontFamily: '"Geist Mono", ui-monospace, monospace',
+                    fontSize: 10, letterSpacing: '0.06em',
+                    color: palette.sub,
+                  }}>{p.twelve}</div>
+                )}
+              </React.Fragment>
+            );
+          })()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── HERO ────────────────────────────────────────────────────
+function Hero({ day, palette, dayIndex, total, units }) {
+  const tempFmt = (c) => units === 'F' ? Math.round(c * 9/5 + 32) : c;
+  return (
+    <div style={{
+      padding: 'calc(72px + env(safe-area-inset-top)) 24px 22px',
+      position: 'relative',
+      background: `linear-gradient(180deg, ${palette.deep} 0%, ${palette.ink} 100%)`,
+      transition: 'background 600ms ease',
+      overflow: 'hidden',
+    }}>
+      {/* faint city silhouette tint */}
+      <div style={{
+        position: 'absolute', inset: 0, opacity: 0.18, pointerEvents: 'none',
+        background: `radial-gradient(120% 60% at 80% 0%, ${palette.accent}55, transparent 60%)`,
+      }} />
+      {/* meta line */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        fontFamily: '"Geist Mono", "JetBrains Mono", ui-monospace, monospace',
+        fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+        color: palette.sub, position: 'relative',
+      }}>
+        <span>Day {String(dayIndex + 1).padStart(2,'0')} / {String(total).padStart(2,'0')}</span>
+        <span>{new Date(day.date + 'T00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {day.dow}</span>
+      </div>
+
+      {day.journey ? (
+        <JourneyHeader journey={day.journey} palette={palette} />
+      ) : (
+        <React.Fragment>
+          {/* big italic city name */}
+          <div style={{
+            marginTop: 14, fontFamily: '"Instrument Serif", "Cormorant Garamond", Georgia, serif',
+            fontStyle: 'italic', fontWeight: 400,
+            fontSize: 72, lineHeight: 0.92, letterSpacing: '-0.02em',
+            color: palette.text, position: 'relative',
+          }}>
+            {day.city}
+          </div>
+
+          <div style={{
+            marginTop: 6, color: palette.sub,
+            fontFamily: '"Geist Mono", "JetBrains Mono", ui-monospace, monospace',
+            fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+            position: 'relative',
+          }}>
+            {day.country}
+          </div>
+        </React.Fragment>
+      )}
+
+      {/* weather row */}
+      <div style={{
+        marginTop: 22, display: 'flex', alignItems: 'flex-end', gap: 16,
+        position: 'relative',
+      }}>
+        <WeatherGlyph kind={day.weather.icon} size={44} color={palette.accent} secondary={palette.accent + '88'} />
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <div style={{
+            fontFamily: '"Instrument Serif", Georgia, serif',
+            fontSize: 40, lineHeight: 1, color: palette.text, fontWeight: 400,
+          }}>{tempFmt(day.weather.hi)}°</div>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 12, color: palette.sub, letterSpacing: '0.1em',
+          }}>/ {tempFmt(day.weather.lo)}°{units}</div>
+        </div>
+        <div style={{ flex: 1 }} />
+        <div style={{
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: 11, color: palette.sub, textAlign: 'right',
+          maxWidth: 130, lineHeight: 1.35,
+        }}>
+          {day.weather.cond}
+        </div>
+      </div>
+
+      {/* weather details strip */}
+      <div style={{
+        marginTop: 16, display: 'flex', gap: 14, alignItems: 'center',
+        fontFamily: '"Geist Mono", ui-monospace, monospace',
+        fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase',
+        color: palette.sub, position: 'relative',
+      }}>
+        <span>Precip · {day.weather.precip}%</span>
+        <span style={{ opacity: 0.4 }}>|</span>
+        <span>Wind · {day.weather.wind} km/h</span>
+        <span style={{ opacity: 0.4 }}>|</span>
+        <span>{day.weather.icon === 'sun' ? 'CLEAR' : day.weather.icon === 'partly' ? 'P. CLOUDY' : day.weather.icon === 'drizzle' ? 'DRIZZLE' : 'CLOUDY'}</span>
+        <span style={{ flex: 1 }}/>
+        {day.weather.live && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            color: palette.accent, letterSpacing: '0.2em',
+          }}>
+            <span style={{
+              width: 5, height: 5, borderRadius: 999,
+              background: palette.accent,
+              animation: 'pulse 1.6s ease-in-out infinite',
+            }}/>
+            LIVE
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── DAY STRIP ───────────────────────────────────────────────
+function DayStrip({ days, selected, onSelect, palette, units }) {
+  const stripRef = React.useRef(null);
+  React.useEffect(() => {
+    const el = stripRef.current?.querySelector(`[data-idx="${selected}"]`);
+    if (el && el.scrollIntoView) {
+      el.parentElement.scrollTo({ left: el.offsetLeft - 80, behavior: 'smooth' });
+    }
+  }, [selected]);
+  const tempFmt = (c) => units === 'F' ? Math.round(c * 9/5 + 32) : c;
+  return (
+    <div style={{
+      background: palette.ink, borderTop: `1px solid ${palette.accent}22`,
+      transition: 'background 600ms ease',
+    }}>
+      <div ref={stripRef} style={{
+        display: 'flex', gap: 8, overflowX: 'auto', padding: '14px 20px 16px',
+        scrollbarWidth: 'none',
+      }} className="day-strip">
+        {days.map((d, i) => {
+          const p = PALETTES[d.theme];
+          const active = i === selected;
+          return (
+            <button
+              key={i}
+              data-idx={i}
+              onClick={() => onSelect(i)}
+              style={{
+                flex: '0 0 auto',
+                width: 64, height: 84,
+                borderRadius: 18,
+                border: active ? `1.5px solid ${palette.accent}` : `1px solid ${palette.accent}22`,
+                background: active ? `${palette.accent}18` : 'transparent',
+                color: palette.text,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 0 8px', cursor: 'pointer',
+                transition: 'all 240ms ease',
+                fontFamily: 'Inter, system-ui, sans-serif',
+              }}>
+              <div style={{
+                fontFamily: '"Geist Mono", ui-monospace, monospace',
+                fontSize: 9, letterSpacing: '0.14em', color: palette.sub, textTransform: 'uppercase',
+              }}>{d.dow}</div>
+              <div style={{
+                fontFamily: '"Instrument Serif", Georgia, serif',
+                fontSize: 24, lineHeight: 1, color: palette.text,
+              }}>{new Date(d.date + 'T00:00').getDate()}</div>
+              <WeatherGlyph kind={d.weather.icon} size={16} color={p.accent} secondary={p.accent + '88'} />
+              <div style={{
+                fontFamily: '"Geist Mono", ui-monospace, monospace',
+                fontSize: 9, color: palette.sub, letterSpacing: '0.06em',
+              }}>{tempFmt(d.weather.hi)}°</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── EVENT ROW ───────────────────────────────────────────────
+function EventRow({ event, palette, isLast, units = 'C', editing, draft, onEnter, onChange, onSave, onCancel, onDelete }) {
+  const [open, setOpen] = React.useState(false);
+  const arrival = event.arrival;
+  const tempFmt = (c) => units === 'F' ? Math.round(c * 9/5 + 32) : c;
+
+  // Body click handler: in view mode, either expand note (if any) or enter edit mode.
+  // We default tap → enter edit (the user asked for click-to-edit). Long-press / note
+  // expansion would be a separate gesture if we wanted to keep it; for now the editor
+  // exposes the note field directly so collapsing isn't needed.
+  const onBodyClick = () => { if (!editing) onEnter(); };
+
+  // Arrival rows: enlarged hero card embedded inline. Picks up the destination
+  // palette so it visually telegraphs the new place even though the day's theme
+  // hasn't changed yet.
+  if (arrival) {
+    const destTheme = arrival.city.toLowerCase();
+    const destPal = window.PALETTES[destTheme] || palette;
+    return (
+      <div style={{
+        display: 'grid', gridTemplateColumns: '64px 1fr',
+        cursor: editing ? 'default' : 'pointer',
+      }} onClick={onBodyClick}>
+        <div style={{
+          padding: '20px 0 20px 20px',
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.08em',
+          color: palette.sub,
+          borderRight: `1px solid ${palette.accent}18`,
+          position: 'relative',
+        }}>
+          {(() => {
+            const p = formatTimePair(event.time);
+            return p ? (
+              <React.Fragment>
+                <div>{p.military}</div>
+                <div style={{ fontSize: 8.5, opacity: 0.6, marginTop: 2, letterSpacing: '0.04em' }}>{p.twelve}</div>
+              </React.Fragment>
+            ) : event.time;
+          })()}
+          <div style={{
+            position: 'absolute', right: -5, top: 24,
+            width: 9, height: 9, borderRadius: 999,
+            background: destPal.accent,
+            boxShadow: `0 0 0 3px ${palette.ink}, 0 0 0 5px ${destPal.accent}33`,
+          }} />
+        </div>
+
+        <div style={{
+          margin: '12px 16px 12px 14px',
+          padding: '16px 16px 16px',
+          borderRadius: 14,
+          background: `linear-gradient(180deg, ${destPal.deep}cc 0%, ${destPal.ink}aa 100%)`,
+          border: `1px solid ${destPal.accent}33`,
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
+          {/* tint glow */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: `radial-gradient(80% 60% at 100% 0%, ${destPal.accent}33, transparent 60%)`,
+          }} />
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: '"Geist Mono", ui-monospace, monospace',
+              fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: destPal.sub,
+            }}>
+              <KindGlyph kind={event.kind} color={destPal.accent} />
+              <span>Arriving · {arrival.time}</span>
+              {event.flag && (
+                <span style={{
+                  marginLeft: 'auto',
+                  color: '#ff6b5a', border: '1px solid #ff6b5a55',
+                  padding: '2px 6px', borderRadius: 4, fontSize: 8,
+                }}>FLAG</span>
+              )}
+            </div>
+
+            {!editing ? (
+              <React.Fragment>
+                <div style={{
+                  marginTop: 4,
+                  fontFamily: '"Instrument Serif", Georgia, serif',
+                  fontStyle: 'italic', fontWeight: 400,
+                  fontSize: 36, lineHeight: 0.98, letterSpacing: '-0.015em',
+                  color: destPal.text,
+                }}>
+                  {event.title}
+                </div>
+
+                <div style={{
+                  marginTop: 12, paddingTop: 12,
+                  borderTop: `1px solid ${destPal.accent}22`,
+                  display: 'flex', alignItems: 'center', gap: 14,
+                }}>
+                  <WeatherGlyph kind={arrival.weather.icon} size={28} color={destPal.accent} secondary={destPal.accent + '88'} />
+                  <div style={{
+                    fontFamily: '"Instrument Serif", Georgia, serif',
+                    fontSize: 26, color: destPal.text, lineHeight: 1,
+                  }}>
+                    {tempFmt(arrival.weather.hi)}°
+                    <span style={{
+                      fontFamily: '"Geist Mono", ui-monospace, monospace',
+                      fontSize: 10, color: destPal.sub, marginLeft: 4,
+                    }}>{units}</span>
+                  </div>
+                  <div style={{
+                    flex: 1, textAlign: 'right',
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    fontSize: 11, color: destPal.sub, lineHeight: 1.35,
+                    maxWidth: 140,
+                  }}>
+                    {arrival.weather.cond}
+                  </div>
+                </div>
+
+                {event.note && (
+                  <div style={{
+                    marginTop: 8,
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    fontSize: 12, color: destPal.sub, lineHeight: 1.45,
+                  }}>{event.note}</div>
+                )}
+              </React.Fragment>
+            ) : (
+              <div style={{ marginTop: 10 }}>
+                <EditForm draft={draft} palette={{ ...palette, sub: destPal.sub, text: destPal.text }}
+                  accent={destPal.accent}
+                  onChange={onChange} onSave={onSave} onCancel={onCancel} onDelete={onDelete} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      display: 'grid', gridTemplateColumns: '64px 1fr',
+      cursor: editing ? 'default' : 'pointer',
+    }} onClick={onBodyClick}>
+      {/* time column */}
+      <div style={{
+        padding: '14px 0 14px 20px',
+        fontFamily: '"Geist Mono", ui-monospace, monospace',
+        fontSize: 10, letterSpacing: '0.08em',
+        color: palette.sub, textAlign: 'left',
+        borderRight: `1px solid ${palette.accent}18`,
+        position: 'relative',
+      }}>
+        {(() => {
+          const p = formatTimePair(event.time);
+          return p ? (
+            <React.Fragment>
+              <div>{p.military}</div>
+              <div style={{ fontSize: 8.5, opacity: 0.6, marginTop: 2, letterSpacing: '0.04em' }}>{p.twelve}</div>
+            </React.Fragment>
+          ) : event.time;
+        })()}
+        {/* dot */}
+        <div style={{
+          position: 'absolute', right: -4, top: 18,
+          width: 7, height: 7, borderRadius: 999,
+          background: event.flag ? '#ff6b5a' : palette.accent,
+          boxShadow: `0 0 0 3px ${palette.ink}`,
+        }} />
+      </div>
+      {/* body */}
+      <div style={{
+        padding: '14px 20px 14px 18px',
+        borderBottom: isLast ? 'none' : `1px solid ${palette.accent}10`,
+      }}>
+        {!editing ? (
+          <React.Fragment>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <KindGlyph kind={event.kind} color={palette.accent} />
+              <div style={{
+                fontFamily: 'Inter, system-ui, sans-serif',
+                fontSize: 15, fontWeight: 500, color: palette.text,
+                letterSpacing: '-0.005em', flex: 1,
+              }}>{event.title}</div>
+              {event.flag && (
+                <span style={{
+                  fontFamily: '"Geist Mono", ui-monospace, monospace',
+                  fontSize: 8, letterSpacing: '0.18em',
+                  color: '#ff6b5a', border: '1px solid #ff6b5a55',
+                  padding: '2px 6px', borderRadius: 4,
+                }}>FLAG</span>
+              )}
+            </div>
+            {event.note && (
+              <div style={{
+                marginTop: 4,
+                fontFamily: 'Inter, system-ui, sans-serif',
+                fontSize: 12, color: palette.sub, lineHeight: 1.45,
+              }}>{event.note}</div>
+            )}
+          </React.Fragment>
+        ) : (
+          <EditForm draft={draft} palette={palette}
+            onChange={onChange} onSave={onSave} onCancel={onCancel} onDelete={onDelete} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── SCHEDULE ────────────────────────────────────────────────
+function Schedule({ day, dayIdx, palette, units, onUpdate, onDelete, onAdd }) {
+  // Editing state lives at the schedule level so only one row at a time is in
+  // edit mode (and the draft is forgotten when the user navigates away).
+  const [editing, setEditing] = React.useState(null);
+  // Reset edit state when switching days.
+  React.useEffect(() => { setEditing(null); }, [dayIdx]);
+
+  const enter = (i, evt) => setEditing({ idx: i, draft: { time: evt.time || '', title: evt.title || '', note: evt.note || '' } });
+  const cancel = () => setEditing(null);
+  const save = () => {
+    if (editing) {
+      onUpdate(dayIdx, editing.idx, {
+        time:  editing.draft.time.trim(),
+        title: editing.draft.title.trim() || 'Untitled',
+        note:  editing.draft.note.trim(),
+      });
+      setEditing(null);
+    }
+  };
+  const del = () => {
+    if (editing) { onDelete(dayIdx, editing.idx); setEditing(null); }
+  };
+  const change = (k, v) => setEditing(s => s && ({ ...s, draft: { ...s.draft, [k]: v } }));
+  const handleAdd = () => {
+    const newIdx = onAdd(dayIdx);
+    // open the freshly-added event for editing
+    setTimeout(() => setEditing({ idx: newIdx, draft: { time: '', title: 'New event', note: '' } }), 0);
+  };
+
+  return (
+    <div style={{
+      background: palette.ink,
+      transition: 'background 600ms ease',
+      paddingBottom: 8,
+    }}>
+      <div style={{
+        padding: '20px 20px 10px',
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+      }}>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: palette.sub,
+        }}>Schedule</div>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.14em',
+          color: palette.sub,
+        }}>{day.events.length} {day.events.length === 1 ? 'item' : 'items'} · tap to edit</div>
+      </div>
+      <div>
+        {day.events.map((e, i) => (
+          <EventRow
+            key={i} event={e} palette={palette}
+            isLast={i === day.events.length - 1} units={units}
+            editing={editing && editing.idx === i}
+            draft={editing && editing.idx === i ? editing.draft : null}
+            onEnter={() => enter(i, e)}
+            onChange={change}
+            onSave={save}
+            onCancel={cancel}
+            onDelete={del}
+          />
+        ))}
+        {/* + Add event */}
+        <div style={{ padding: '14px 20px 18px' }}>
+          <button onClick={handleAdd} style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'transparent', border: `1px dashed ${palette.accent}55`,
+            color: palette.accent, opacity: 0.85,
+            cursor: 'pointer',
+            padding: '10px 14px', borderRadius: 12,
+            fontFamily: 'Inter, system-ui, sans-serif',
+            fontSize: 13,
+          }}>
+            <svg width="12" height="12" viewBox="0 0 12 12">
+              <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            </svg>
+            <span>Add event</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EDIT-MODE FORM (shared between regular & arrival rows) ──
+function EditForm({ draft, palette, onChange, onSave, onCancel, onDelete, accent }) {
+  const ax = accent || palette.accent;
+  const ink = palette.ink;
+  const inputStyle = (extra = {}) => ({
+    width: '100%', boxSizing: 'border-box',
+    padding: '8px 10px',
+    background: `${ax}10`,
+    border: `1px solid ${ax}55`,
+    borderRadius: 8, outline: 'none',
+    color: palette.text,
+    fontFamily: 'Inter, system-ui, sans-serif',
+    fontSize: 14,
+    ...extra,
+  });
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onCancel();
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) onSave();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onCancel, onSave]);
+  return (
+    <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <input
+        autoFocus
+        value={draft.title}
+        placeholder="What's happening"
+        onChange={(e) => onChange('title', e.target.value)}
+        style={inputStyle({ fontSize: 15, fontWeight: 500 })}
+      />
+      <input
+        value={draft.time}
+        placeholder="Time (e.g. 14:30, AM, 9PM…)"
+        onChange={(e) => onChange('time', e.target.value)}
+        style={inputStyle({
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 12, letterSpacing: '0.06em',
+        })}
+      />
+      <textarea
+        value={draft.note}
+        placeholder="Notes — addresses, confirmations, reminders…"
+        onChange={(e) => onChange('note', e.target.value)}
+        rows={2}
+        style={inputStyle({ fontSize: 12, resize: 'vertical', minHeight: 44 })}
+      />
+      <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
+        <button onClick={onSave} style={{
+          flex: 1, padding: '9px 12px', borderRadius: 8,
+          border: 'none', cursor: 'pointer',
+          background: ax, color: ink,
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+        }}>Save</button>
+        <button onClick={onCancel} style={{
+          padding: '9px 12px', borderRadius: 8,
+          border: `1px solid ${ax}33`, cursor: 'pointer',
+          background: 'transparent', color: palette.sub,
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+        }}>Cancel</button>
+        <button onClick={onDelete} style={{
+          width: 36, height: 36, borderRadius: 8,
+          border: `1px solid #ff6b5a44`, cursor: 'pointer',
+          background: 'transparent', color: '#ff6b5a',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 0,
+        }} title="Delete">
+          <svg width="13" height="13" viewBox="0 0 14 14">
+            <path d="M3 4h8M5 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1M4 4l0.5 8a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1L10 4" stroke="currentColor" strokeWidth="1.3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── MAP VIEW (real Leaflet map) ──────────────────────────────
+// Uses CartoDB Voyager (color) tiles via Leaflet so this looks like an actual
+// map of Europe with the transatlantic LAX → London leg drawn as a proper
+// great-circle arc (the real path of long-haul flights).
+const CITIES = [
+  { id: 'lax',     name: 'LAX',     lat: 33.9425, lon: -118.4081, dayIdx: 0 },
+  { id: 'london',  name: 'London',  lat: 51.5074, lon:   -0.1278 },
+  { id: 'paris',   name: 'Paris',   lat: 48.8566, lon:    2.3522 },
+  { id: 'rome',    name: 'Rome',    lat: 41.9028, lon:   12.4964 },
+  { id: 'tuscany', name: 'Tuscany', lat: 43.3188, lon:   11.3308 }, // Siena
+  { id: 'paros',   name: 'Paros',   lat: 37.0856, lon:   25.1500 },
+];
+const ROUTE_ORDER = ['lax', 'london', 'rome', 'tuscany', 'rome', 'paros', 'paris'];
+
+// Great-circle interpolation — flights follow great circles, which look like
+// arcs on a Mercator projection. n=64 is plenty smooth for a polyline.
+function gcArc(a, b, n) {
+  const φ1 = a[0] * Math.PI / 180, λ1 = a[1] * Math.PI / 180;
+  const φ2 = b[0] * Math.PI / 180, λ2 = b[1] * Math.PI / 180;
+  const dφ = (φ2 - φ1) / 2, dλ = (λ2 - λ1) / 2;
+  const δ = 2 * Math.asin(Math.sqrt(
+    Math.sin(dφ) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(dλ) ** 2
+  ));
+  if (δ === 0) return [a, b];
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const f = i / n;
+    const A = Math.sin((1 - f) * δ) / Math.sin(δ);
+    const B = Math.sin(f * δ) / Math.sin(δ);
+    const x = A * Math.cos(φ1) * Math.cos(λ1) + B * Math.cos(φ2) * Math.cos(λ2);
+    const y = A * Math.cos(φ1) * Math.sin(λ1) + B * Math.cos(φ2) * Math.sin(λ2);
+    const z = A * Math.sin(φ1) + B * Math.sin(φ2);
+    const φ = Math.atan2(z, Math.sqrt(x * x + y * y));
+    const λ = Math.atan2(y, x);
+    out.push([φ * 180 / Math.PI, λ * 180 / Math.PI]);
+  }
+  return out;
+}
+
+function MapView({ palette, days, selected, onSelect }) {
+  const mapElRef    = React.useRef(null);
+  const mapRef      = React.useRef(null);
+  const layerRef    = React.useRef(null);
+  const onSelectRef = React.useRef(onSelect);
+  onSelectRef.current = onSelect;
+
+  const cityToDay = {};
+  days.forEach((d, i) => { if (cityToDay[d.theme] == null) cityToDay[d.theme] = i; });
+
+  // Init the map once.
+  React.useEffect(() => {
+    if (!mapElRef.current || mapRef.current) return;
+    const L = window.L;
+    if (!L) { console.warn('Leaflet not loaded'); return; }
+
+    const map = L.map(mapElRef.current, {
+      center: [44, -45],
+      zoom: 3,
+      zoomControl: true,
+      scrollWheelZoom: false,
+      doubleClickZoom: true,
+      attributionControl: true,
+      worldCopyJump: true,
+    });
+    // Fit to cover LAX → Paros (transatlantic)
+    map.fitBounds([[31, -122], [54, 28]], { padding: [10, 10] });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
+
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, []);
+
+  // Render / re-render markers and route whenever palette or selected changes.
+  React.useEffect(() => {
+    const L = window.L;
+    const map = mapRef.current;
+    if (!L || !map) return;
+    if (layerRef.current) { layerRef.current.remove(); layerRef.current = null; }
+    const group = L.layerGroup().addTo(map);
+    layerRef.current = group;
+
+    // Build the route as smooth great-circle arcs between consecutive waypoints
+    const routeCoords = ROUTE_ORDER
+      .map(id => CITIES.find(c => c.id === id)).filter(Boolean)
+      .map(c => [c.lat, c.lon]);
+    const linePts = [];
+    for (let i = 0; i < routeCoords.length - 1; i++) {
+      const arc = gcArc(routeCoords[i], routeCoords[i + 1], 64);
+      if (i === 0) linePts.push(...arc);
+      else linePts.push(...arc.slice(1));
+    }
+    // Drop a glowing ghost line under the dashed accent line for depth
+    L.polyline(linePts, {
+      color: '#000', weight: 6, opacity: 0.25, lineCap: 'round',
+    }).addTo(group);
+    L.polyline(linePts, {
+      color: palette.accent,
+      weight: 2.5,
+      opacity: 0.95,
+      dashArray: '6 5',
+      lineCap: 'round',
+    }).addTo(group);
+
+    // City markers
+    CITIES.forEach(c => {
+      const isActive = days[selected]?.theme === c.id || (c.id === 'lax' && days[selected]?.theme === 'transit' && selected === 0);
+      const color = (PALETTES[c.id] || palette).accent;
+      const isAirport = c.id === 'lax';
+      const dotSize  = isAirport ? 7 : (isActive ? 11 : 9);
+      const labelSize = isAirport ? 11 : (isActive ? 15 : 13);
+      const html = `
+        <div class="city-pin ${isActive ? 'active' : ''}" style="color:${color}; transform: translate(-50%, -50%); display:flex; flex-direction:column; align-items:center; gap:3px; pointer-events:auto;">
+          <div class="dot" style="width:${dotSize}px; height:${dotSize}px; border-radius:9999px; background:${color}; ${isAirport ? `border:1.5px solid #fff;` : ''}"></div>
+          <div class="label" style="font-size:${labelSize}px; padding: 1px 6px; border-radius:6px; background: rgba(8,10,14,0.78); color:${isActive ? color : '#fff'}; opacity:${isActive ? 1 : 0.95}; ${isAirport ? 'font-style:normal; font-family:\"Geist Mono\", ui-monospace, monospace; letter-spacing:0.1em;' : ''}">${c.name}</div>
+        </div>`;
+      const icon = L.divIcon({
+        className: 'city-pin-wrap',
+        html,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      });
+      const m = L.marker([c.lat, c.lon], { icon }).addTo(group);
+      m.on('click', () => {
+        const dayIdx = c.dayIdx != null ? c.dayIdx : cityToDay[c.id];
+        if (dayIdx != null) onSelectRef.current(dayIdx);
+      });
+    });
+  }, [palette, selected, days]);
+
+  // Invalidate size on mount in case the container was sized after Leaflet init.
+  React.useEffect(() => {
+    const t = setTimeout(() => mapRef.current && mapRef.current.invalidateSize(), 50);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div style={{
+      background: palette.ink, transition: 'background 600ms ease',
+      padding: 'calc(72px + env(safe-area-inset-top)) 24px 24px', height: '100%',
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+        marginBottom: 16,
+      }}>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: palette.sub,
+        }}>The route</div>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 9, letterSpacing: '0.16em',
+          color: palette.sub,
+        }}>LAX → Paros · ~6,500 mi</div>
+      </div>
+
+      <div style={{
+        position: 'relative',
+        height: 360,
+        borderRadius: 20, overflow: 'hidden',
+        border: `1px solid ${palette.accent}33`,
+      }}>
+        <div ref={mapElRef} style={{ position: 'absolute', inset: 0 }}/>
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          boxShadow: `inset 0 0 60px ${palette.ink}aa`,
+        }}/>
+      </div>
+
+      {/* trip stats */}
+      <div style={{
+        marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 1fr',
+        gap: 12,
+      }}>
+        {[
+          ['Cities', '5'],
+          ['Days', String(days.length)],
+          ['Flights', '5'],
+          ['Hotels', '3'],
+        ].map(([k,v]) => (
+          <div key={k} style={{
+            padding: '14px 16px',
+            border: `1px solid ${palette.accent}22`, borderRadius: 14,
+            background: `${palette.accent}08`,
+          }}>
+            <div style={{
+              fontFamily: '"Geist Mono", ui-monospace, monospace',
+              fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: palette.sub,
+            }}>{k}</div>
+            <div style={{
+              marginTop: 4,
+              fontFamily: '"Instrument Serif", Georgia, serif',
+              fontSize: 28, color: palette.text, lineHeight: 1,
+            }}>{v}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── PACK VIEW ───────────────────────────────────────────────
+const DEFAULT_PACK = [
+  { cat: 'Documents', items: [
+    { name: 'Passport',                         checked: true  },
+    { name: 'Driving license (Italy car)',      checked: true  },
+    { name: 'Travel insurance card',            checked: false },
+    { name: 'Hotel confirmations printed',      checked: false },
+  ]},
+  { cat: 'Power', items: [
+    { name: 'UK adapter',                       checked: false },
+    { name: 'EU adapter (×2)',                  checked: false },
+    { name: 'Power bank',                       checked: true  },
+    { name: 'Phone & laptop chargers',          checked: true  },
+  ]},
+  { cat: 'Body', items: [
+    { name: 'Sunscreen',                        checked: false },
+    { name: 'Sunglasses',                       checked: true  },
+    { name: 'Meds & supplements',               checked: false },
+    { name: 'Bandaids',                         checked: false },
+  ]},
+];
+const STORAGE_KEY = 'europe26-pack-v1';
+const TRIP_DAYS = 11;
+const WARDROBE_DEFAULTS = [
+  { id: 'shirts',    name: 'Shirts',       count: 7,  icon: 'shirt'    },
+  { id: 'underwear', name: 'Underwear',    count: 11, icon: 'undie'    },
+  { id: 'socks',     name: 'Socks',        count: 8,  icon: 'sock'     },
+  { id: 'pants',     name: 'Pants',        count: 3,  icon: 'pants'    },
+  { id: 'shorts',    name: 'Shorts',       count: 2,  icon: 'shorts'   },
+  { id: 'sleepwear', name: 'Sleepwear',    count: 2,  icon: 'pjs'      },
+  { id: 'swim',      name: 'Swimwear',     count: 2,  icon: 'swim'     },
+  { id: 'outer',     name: 'Outerwear',    count: 1,  icon: 'jacket'   },
+  { id: 'nice',      name: 'Nice outfit',  count: 1,  icon: 'dress'    },
+];
+
+// Migrate old-format pack data (flat array) into new shape with wardrobe.
+function normalizePerson(p) {
+  if (Array.isArray(p)) return { categories: p, wardrobe: clone(WARDROBE_DEFAULTS) };
+  return {
+    categories: p.categories ?? clone(DEFAULT_PACK),
+    wardrobe:   p.wardrobe   ?? clone(WARDROBE_DEFAULTS),
+  };
+}
+function clone(x) { return JSON.parse(JSON.stringify(x)); }
+
+function loadPack() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        carly: normalizePerson(parsed.carly ?? clone(DEFAULT_PACK)),
+        max:   normalizePerson(parsed.max   ?? clone(DEFAULT_PACK)),
+      };
+    }
+  } catch {}
+  return {
+    carly: { categories: clone(DEFAULT_PACK), wardrobe: clone(WARDROBE_DEFAULTS) },
+    max:   { categories: clone(DEFAULT_PACK), wardrobe: clone(WARDROBE_DEFAULTS) },
+  };
+}
+
+// ── Carly's wardrobe breakdown ──────────────────────────────
+// Travel days are auto-computed from the schedule (a day with 2+ transit events
+// — flight/drive/ferry — counts as a travel day). Nice-night status is
+// editable and persisted to localStorage so Carly can refine her best guess
+// before packing.
+const NICE_KEY = 'europe26-nice-v1';
+const DEFAULT_NICE = { 3: 'Siena dinner', 9: 'Paris dinner' };
+
+function isTravelDay(day) {
+  const transit = (day.events || []).filter(e =>
+    e.kind === 'flight' || e.kind === 'drive' || e.kind === 'ferry'
+  );
+  return transit.length >= 2;
+}
+function loadNice() {
+  try {
+    const raw = localStorage.getItem(NICE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { ...DEFAULT_NICE };
+}
+
+function WardrobeBreakdown({ palette }) {
+  const days = window.TRIP.days;
+  const [niceMap, setNiceMap] = React.useState(loadNice);
+  const [editingIdx, setEditingIdx] = React.useState(null);
+  const [draft, setDraft] = React.useState('');
+  const draftRef = React.useRef(null);
+  React.useEffect(() => { if (editingIdx != null && draftRef.current) draftRef.current.focus(); }, [editingIdx]);
+  React.useEffect(() => {
+    try { localStorage.setItem(NICE_KEY, JSON.stringify(niceMap)); } catch {}
+  }, [niceMap]);
+
+  const travelSet = React.useMemo(() => new Set(
+    days.map((d, i) => isTravelDay(d) ? i : -1).filter(i => i >= 0)
+  ), [days]);
+
+  const niceIdxs = Object.keys(niceMap).map(k => parseInt(k, 10)).sort((a,b) => a-b);
+  const travelCount = travelSet.size;
+  const niceCount = niceIdxs.length;
+  // Casual = days that aren't travel
+  const casualCount = days.length - travelCount;
+
+  const toggleNice = (idx) => {
+    setNiceMap(m => {
+      if (m[idx] != null) {
+        const next = { ...m }; delete next[idx]; return next;
+      }
+      return { ...m, [idx]: 'Dinner' };
+    });
+  };
+  const startRename = (idx) => {
+    setEditingIdx(idx); setDraft(niceMap[idx] || '');
+  };
+  const commitRename = () => {
+    if (editingIdx != null) {
+      const label = (draft.trim() || 'Dinner');
+      setNiceMap(m => ({ ...m, [editingIdx]: label }));
+      setEditingIdx(null); setDraft('');
+    }
+  };
+  const remove = (idx) => {
+    setNiceMap(m => { const n = { ...m }; delete n[idx]; return n; });
+    if (editingIdx === idx) setEditingIdx(null);
+  };
+
+  return (
+    <div style={{
+      marginBottom: 24,
+      padding: '14px 14px 16px',
+      borderRadius: 14,
+      background: `${palette.accent}08`,
+      border: `1px solid ${palette.accent}22`,
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+        marginBottom: 6,
+      }}>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: palette.sub,
+        }}>Trip mix · for Carly</div>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 9, letterSpacing: '0.16em',
+          color: palette.sub,
+        }}>{days.length} days</div>
+      </div>
+
+      <div style={{
+        display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 2,
+      }}>
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif',
+          fontStyle: 'italic', fontSize: 38, color: palette.text, lineHeight: 1,
+        }}>{niceCount}</div>
+        <div style={{
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: 12, color: palette.sub, lineHeight: 1.3,
+        }}>nice {niceCount === 1 ? 'outfit' : 'outfits'}<br/>needed for dinner</div>
+      </div>
+
+      {/* day strip — tap to toggle nice */}
+      <div style={{ marginTop: 14 }}>
+        <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end' }}>
+          {days.map((d, i) => {
+            const isTravel = travelSet.has(i);
+            const isNice = niceMap[i] != null;
+            const date = new Date(d.date + 'T00:00').getDate();
+            return (
+              <button key={i}
+                onClick={() => toggleNice(i)}
+                title={isNice ? 'Tap to remove nice night' : 'Tap to mark nice night'}
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: 4,
+                  background: 'transparent', border: 'none',
+                  padding: 0, cursor: 'pointer',
+                }}>
+                <div style={{
+                  width: '100%',
+                  height: isNice ? 28 : isTravel ? 14 : 22,
+                  borderRadius: 4,
+                  background: isNice ? palette.accent
+                              : isTravel ? palette.sub
+                              : palette.text,
+                  opacity: isNice ? 1 : isTravel ? 1 : 0.7,
+                  border: isNice ? `1px solid ${palette.accent}` : 'none',
+                  position: 'relative',
+                  transition: 'all 180ms ease',
+                }}>
+                  {isNice && (
+                    <div style={{
+                      position: 'absolute', top: -1, right: -1,
+                      width: 5, height: 5, borderRadius: 999,
+                      background: palette.accent,
+                      boxShadow: `0 0 0 1.5px ${palette.ink}`,
+                    }}/>
+                  )}
+                </div>
+                <div style={{
+                  fontFamily: '"Geist Mono", ui-monospace, monospace',
+                  fontSize: 8, color: palette.sub, letterSpacing: '0.02em',
+                }}>{date}</div>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{
+          marginTop: 6,
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 8, letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: palette.sub, opacity: 0.7,
+        }}>Tap a day to mark a nice night</div>
+      </div>
+
+      <div style={{
+        marginTop: 14, display: 'flex', gap: 14, flexWrap: 'wrap',
+        fontFamily: '"Geist Mono", ui-monospace, monospace',
+        fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ width: 10, height: 6, borderRadius: 2, background: palette.sub }}/>
+          <span style={{ color: palette.sub }}>Travel · {travelCount}d</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 2, background: palette.text, opacity: 0.7 }}/>
+          <span style={{ color: palette.sub }}>Casual · {casualCount}d</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ width: 10, height: 12, borderRadius: 2, background: palette.accent, border: `1px solid ${palette.accent}` }}/>
+          <span style={{ color: palette.sub }}>Dressy · {niceCount}</span>
+        </div>
+      </div>
+
+      {/* editable dinners list */}
+      <div style={{
+        marginTop: 12, paddingTop: 12,
+        borderTop: `1px solid ${palette.accent}22`,
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+          marginBottom: 6,
+        }}>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 8, letterSpacing: '0.2em', textTransform: 'uppercase',
+            color: palette.sub,
+          }}>Dinners to dress for</div>
+          {niceCount > 0 && (
+            <div style={{
+              fontFamily: '"Geist Mono", ui-monospace, monospace',
+              fontSize: 8, letterSpacing: '0.14em',
+              color: palette.sub, opacity: 0.7,
+            }}>Tap label to rename</div>
+          )}
+        </div>
+        {niceCount === 0 ? (
+          <div style={{
+            fontFamily: 'Inter, system-ui, sans-serif',
+            fontSize: 12, color: palette.sub, fontStyle: 'italic',
+          }}>No nice nights yet — tap a day above to add one.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {niceIdxs.map((idx) => {
+              const date = new Date(days[idx].date + 'T00:00');
+              const dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              const isEditing = editingIdx === idx;
+              return (
+                <div key={idx} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '4px 0',
+                }}>
+                  <div style={{
+                    width: 4, height: 4, borderRadius: 999,
+                    background: palette.accent, flexShrink: 0,
+                  }}/>
+                  {isEditing ? (
+                    <input
+                      ref={draftRef}
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      onBlur={commitRename}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') commitRename();
+                        if (e.key === 'Escape') { setEditingIdx(null); setDraft(''); }
+                      }}
+                      style={{
+                        flex: 1, padding: '2px 6px',
+                        background: `${palette.accent}10`,
+                        border: `1px solid ${palette.accent}55`,
+                        borderRadius: 6, outline: 'none',
+                        color: palette.text,
+                        fontFamily: '"Instrument Serif", Georgia, serif',
+                        fontStyle: 'italic', fontSize: 16,
+                      }}/>
+                  ) : (
+                    <button onClick={() => startRename(idx)} style={{
+                      flex: 1, textAlign: 'left',
+                      background: 'transparent', border: 'none', cursor: 'text',
+                      padding: 0,
+                      fontFamily: '"Instrument Serif", Georgia, serif',
+                      fontStyle: 'italic', fontSize: 17, color: palette.text,
+                      lineHeight: 1.2, whiteSpace: 'nowrap',
+                      overflow: 'hidden', textOverflow: 'ellipsis',
+                    }}>{niceMap[idx]}</button>
+                  )}
+                  <div style={{
+                    fontFamily: '"Geist Mono", ui-monospace, monospace',
+                    fontSize: 9, letterSpacing: '0.12em',
+                    color: palette.sub, flexShrink: 0,
+                  }}>{dateLabel}</div>
+                  <button onClick={() => remove(idx)} style={{
+                    width: 22, height: 22, borderRadius: 999,
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: palette.sub, opacity: 0.55,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: 0, flexShrink: 0,
+                  }} title="Remove">
+                    <svg width="11" height="11" viewBox="0 0 12 12">
+                      <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PackView({ palette }) {
+  const [person, setPerson] = React.useState('carly');
+  const [pack, setPack] = React.useState(loadPack);
+  // persist
+  React.useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pack)); } catch {}
+  }, [pack]);
+
+  // editing state — null or { cat, idx } for the item being renamed
+  const [editing, setEditing] = React.useState(null);
+  const [draft, setDraft] = React.useState('');
+  const draftRef = React.useRef(null);
+  React.useEffect(() => { if (editing && draftRef.current) draftRef.current.focus(); }, [editing]);
+
+  const list = pack[person].categories;
+  const wardrobe = pack[person].wardrobe;
+  const total = list.reduce((a, c) => a + c.items.length, 0);
+  const done  = list.reduce((a, c) => a + c.items.filter(i => i.checked).length, 0);
+  const pct   = total ? Math.round(done / total * 100) : 0;
+  const totalClothes = wardrobe.reduce((a, w) => a + w.count, 0);
+
+  const mutate = (mutator) => {
+    setPack(p => {
+      const next = JSON.parse(JSON.stringify(p));
+      mutator(next[person].categories);
+      return next;
+    });
+  };
+  const mutateWardrobe = (mutator) => {
+    setPack(p => {
+      const next = JSON.parse(JSON.stringify(p));
+      mutator(next[person].wardrobe);
+      return next;
+    });
+  };
+  const bumpWardrobe = (id, delta) => mutateWardrobe(w => {
+    const it = w.find(x => x.id === id);
+    if (it) it.count = Math.max(0, it.count + delta);
+  });
+
+  const toggle  = (ci, ii) => mutate(l => { l[ci].items[ii].checked = !l[ci].items[ii].checked; });
+  const remove  = (ci, ii) => mutate(l => { l[ci].items.splice(ii, 1); });
+  const rename  = (ci, ii, name) => mutate(l => { l[ci].items[ii].name = name; });
+  const addItem = (ci) => mutate(l => { l[ci].items.push({ name: 'New item', checked: false }); });
+  const resetAll = () => {
+    if (confirm('Reset ' + person.charAt(0).toUpperCase() + person.slice(1) + "'s list to default?")) {
+      setPack(p => ({ ...p, [person]: {
+        categories: JSON.parse(JSON.stringify(DEFAULT_PACK)),
+        wardrobe:   JSON.parse(JSON.stringify(WARDROBE_DEFAULTS)),
+      }}));
+    }
+  };
+
+  const commitEdit = () => {
+    if (editing) {
+      const name = draft.trim() || 'Untitled';
+      rename(editing.ci, editing.ii, name);
+      setEditing(null); setDraft('');
+    }
+  };
+
+  return (
+    <div style={{ background: palette.ink, transition: 'background 600ms ease', padding: 'calc(72px + env(safe-area-inset-top)) 24px 24px' }}>
+      <div style={{
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+      }}>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: palette.sub,
+        }}>Pack</div>
+        <button onClick={resetAll} style={{
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          color: palette.sub,
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
+        }}>Reset</button>
+      </div>
+
+      {/* person toggle */}
+      <div style={{
+        marginTop: 14, display: 'flex',
+        background: `${palette.accent}10`,
+        border: `1px solid ${palette.accent}22`,
+        borderRadius: 999, padding: 4,
+      }}>
+        {['carly', 'max'].map(p => {
+          const active = person === p;
+          const cats = pack[p].categories;
+          const tot = cats.reduce((a, c) => a + c.items.length, 0);
+          const dn = cats.reduce((a, c) => a + c.items.filter(i => i.checked).length, 0);
+          return (
+            <button key={p}
+              onClick={() => { setEditing(null); setPerson(p); }}
+              style={{
+                flex: 1, padding: '10px 14px', borderRadius: 999,
+                border: 'none', cursor: 'pointer',
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.ink : palette.text,
+                transition: 'all 200ms ease',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}>
+              <span style={{
+                fontFamily: '"Instrument Serif", Georgia, serif',
+                fontStyle: 'italic', fontSize: 18, lineHeight: 1,
+              }}>{p === 'carly' ? 'Carly' : 'Max'}</span>
+              <span style={{
+                fontFamily: '"Geist Mono", ui-monospace, monospace',
+                fontSize: 9, letterSpacing: '0.1em',
+                opacity: active ? 0.7 : 0.55,
+              }}>{dn}/{tot}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* progress */}
+      <div style={{
+        marginTop: 22,
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+      }}>
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif',
+          fontStyle: 'italic', fontSize: 36, color: palette.text, lineHeight: 1,
+          whiteSpace: 'nowrap', flexShrink: 0,
+        }}>{done} <span style={{ color: palette.sub }}>/ {total}</span></div>
+        <div style={{
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+          fontSize: 10, color: palette.sub, letterSpacing: '0.16em',
+        }}>{pct}% READY</div>
+      </div>
+      <div style={{
+        marginTop: 10,
+        height: 3, background: `${palette.accent}22`, borderRadius: 2, overflow: 'hidden',
+        marginBottom: 24,
+      }}>
+        <div style={{
+          width: `${pct}%`, height: '100%',
+          background: palette.accent, transition: 'width 240ms ease',
+        }}/>
+      </div>
+
+      {person === 'carly' && <WardrobeBreakdown palette={palette}/>}
+
+      {/* Wardrobe counter — how many of each item to bring */}
+      <div style={{ marginBottom: 26 }}>
+        <div style={{
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+          marginBottom: 10,
+        }}>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
+            color: palette.sub,
+          }}>Clothes count</div>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: palette.sub,
+          }}>{totalClothes} pcs · {TRIP_DAYS}d</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {wardrobe.map((w) => {
+            const coverage = w.count / TRIP_DAYS;
+            let tag = null;
+            if (w.id === 'underwear' || w.id === 'socks' || w.id === 'shirts') {
+              if (coverage >= 1) tag = 'DAILY';
+              else if (coverage >= 0.6) tag = `${w.count}/${TRIP_DAYS}D`;
+              else tag = 'LIGHT';
+            }
+            return (
+              <div key={w.id} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '6px 10px 7px',
+                borderRadius: 10,
+                background: `${palette.accent}07`,
+                border: `1px solid ${palette.accent}18`,
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                {/* faint coverage strip on the bottom edge */}
+                <div style={{
+                  position: 'absolute', left: 0, right: 0, bottom: 0,
+                  height: 1.5, background: `${palette.accent}10`,
+                }}>
+                  <div style={{
+                    width: `${Math.min(100, coverage * 100)}%`, height: '100%',
+                    background: palette.accent, opacity: 0.55,
+                    transition: 'width 200ms ease',
+                  }}/>
+                </div>
+                <div style={{
+                  flex: 1,
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  fontSize: 12.5, color: palette.text,
+                  letterSpacing: '-0.005em',
+                }}>{w.name}</div>
+                {tag && (
+                  <div style={{
+                    fontFamily: '"Geist Mono", ui-monospace, monospace',
+                    fontSize: 7, letterSpacing: '0.16em',
+                    color: palette.sub,
+                    padding: '2px 4px', borderRadius: 3,
+                    background: `${palette.accent}15`,
+                  }}>{tag}</div>
+                )}
+                <button onClick={() => bumpWardrobe(w.id, -1)} style={{
+                  width: 22, height: 22, borderRadius: 999,
+                  border: `1px solid ${palette.accent}33`,
+                  background: 'transparent', cursor: 'pointer',
+                  color: palette.text, padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  opacity: w.count === 0 ? 0.3 : 1,
+                }} disabled={w.count === 0}>
+                  <svg width="9" height="9" viewBox="0 0 10 10">
+                    <path d="M2 5h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                </button>
+                <div style={{
+                  fontFamily: '"Instrument Serif", Georgia, serif',
+                  fontSize: 20, color: palette.text, lineHeight: 1,
+                  minWidth: 22, textAlign: 'center', fontStyle: 'italic',
+                }}>{w.count}</div>
+                <button onClick={() => bumpWardrobe(w.id, +1)} style={{
+                  width: 22, height: 22, borderRadius: 999,
+                  border: `1px solid ${palette.accent}55`,
+                  background: `${palette.accent}15`,
+                  cursor: 'pointer',
+                  color: palette.text, padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="9" height="9" viewBox="0 0 10 10">
+                    <path d="M5 2v6M2 5h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {list.map((cat, ci) => (
+        <div key={cat.cat} style={{ marginBottom: 18 }}>
+          <div style={{
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
+            fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
+            color: palette.sub, marginBottom: 8,
+          }}>{cat.cat}</div>
+          {cat.items.map((it, ii) => {
+            const isEditing = editing && editing.ci === ci && editing.ii === ii;
+            return (
+              <div key={ii} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '8px 0', position: 'relative',
+              }}>
+                <button onClick={() => toggle(ci, ii)} style={{
+                  width: 18, height: 18, borderRadius: 5,
+                  border: `1.5px solid ${it.checked ? palette.accent : palette.accent + '44'}`,
+                  background: it.checked ? palette.accent : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 180ms ease', flexShrink: 0,
+                  cursor: 'pointer', padding: 0,
+                }}>
+                  {it.checked && (
+                    <svg width="10" height="10" viewBox="0 0 10 10">
+                      <path d="M2 5 L4.2 7 L8 3" stroke={palette.ink} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </button>
+
+                {isEditing ? (
+                  <input
+                    ref={draftRef}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onBlur={commitEdit}
+                    onKeyDown={(e) => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(null); setDraft(''); } }}
+                    style={{
+                      flex: 1, padding: '2px 6px',
+                      background: `${palette.accent}10`,
+                      border: `1px solid ${palette.accent}55`,
+                      borderRadius: 6, outline: 'none',
+                      color: palette.text,
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                      fontSize: 14,
+                    }}/>
+                ) : (
+                  <button
+                    onClick={() => { setEditing({ ci, ii }); setDraft(it.name); }}
+                    style={{
+                      flex: 1, textAlign: 'left',
+                      background: 'transparent', border: 'none', cursor: 'text',
+                      padding: 0,
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                      fontSize: 14, color: it.checked ? palette.sub : palette.text,
+                      textDecoration: it.checked ? 'line-through' : 'none',
+                      textDecorationColor: palette.sub,
+                    }}>{it.name}</button>
+                )}
+
+                <button onClick={() => remove(ci, ii)} style={{
+                  width: 24, height: 24, borderRadius: 999,
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: palette.sub, opacity: 0.55,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: 0, flexShrink: 0,
+                }} title="Remove">
+                  <svg width="12" height="12" viewBox="0 0 12 12">
+                    <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            );
+          })}
+          <button onClick={() => {
+            addItem(ci);
+            // open the new item for editing immediately
+            setTimeout(() => {
+              setEditing({ ci, ii: pack[person].categories[ci].items.length });
+              setDraft('New item');
+            }, 0);
+          }} style={{
+            marginTop: 4, marginLeft: 30,
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            padding: '4px 0',
+            color: palette.accent, opacity: 0.75,
+            fontFamily: 'Inter, system-ui, sans-serif',
+            fontSize: 13,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <svg width="11" height="11" viewBox="0 0 12 12">
+              <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            </svg>
+            <span>Add item</span>
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── BOTTOM NAV ─────────────────────────────────────────────
+function BottomNav({ tab, onTab, palette }) {
+  const tabs = [
+    { id: 'days', label: 'Days', icon: (c) => (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="3" y="5" width="14" height="12" rx="2" stroke={c} strokeWidth="1.4"/>
+        <path d="M3 8h14" stroke={c} strokeWidth="1.4"/>
+        <path d="M7 3v4M13 3v4" stroke={c} strokeWidth="1.4" strokeLinecap="round"/>
+      </svg>
+    )},
+    { id: 'map', label: 'Map', icon: (c) => (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 5l4-2 6 2 4-2v12l-4 2-6-2-4 2z" stroke={c} strokeWidth="1.4" strokeLinejoin="round"/>
+        <path d="M7 3v14M13 5v14" stroke={c} strokeWidth="1.4"/>
+      </svg>
+    )},
+    { id: 'pack', label: 'Pack', icon: (c) => (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="3.5" y="6" width="13" height="11" rx="2" stroke={c} strokeWidth="1.4"/>
+        <path d="M7 6V4.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 13 4.5V6" stroke={c} strokeWidth="1.4"/>
+      </svg>
+    )},
+  ];
+  return (
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      height: 'auto', paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+      background: `linear-gradient(180deg, ${palette.ink}00 0%, ${palette.ink} 40%)`,
+      display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
+      zIndex: 30, pointerEvents: 'none',
+    }}>
+      <div style={{
+        display: 'flex', gap: 4, padding: 6, pointerEvents: 'auto',
+        background: `${palette.deep}cc`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: `1px solid ${palette.accent}22`,
+        borderRadius: 999,
+      }}>
+        {tabs.map(t => {
+          const active = tab === t.id;
+          return (
+            <button key={t.id} onClick={() => onTab(t.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 999, border: 'none',
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.ink : palette.text,
+                cursor: 'pointer', transition: 'all 200ms ease',
+                fontFamily: '"Geist Mono", ui-monospace, monospace',
+                fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
+              }}>
+              {t.icon(active ? palette.ink : palette.text)}
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { Hero, DayStrip, Schedule, EventRow, MapView, PackView, BottomNav, WeatherGlyph, KindGlyph, PALETTES, formatTimePair });
+  </script>
+  <script type="text/babel">
+const TWEAK_DEFAULTS = { "units": "F", "ambient": true };
+
+function App() {
+  const trip = window.TRIP;
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+
+  const todayIdx = trip.days.findIndex(d => d.date === trip.today);
+  const initialIdx = todayIdx >= 0 ? todayIdx : 0;
+  const [selected, setSelected] = React.useState(initialIdx);
+  const [tab, setTab] = React.useState('days');
+
+  const SCHED_KEY = 'europe26-schedule-v2';
+  const [days, setDays] = React.useState(() => {
+    try {
+      const raw = localStorage.getItem(SCHED_KEY);
+      if (raw) {
+        const stored = JSON.parse(raw);
+        return trip.days.map((d, i) => ({
+          ...JSON.parse(JSON.stringify(d)),
+          events: (stored[i] && stored[i].events) || JSON.parse(JSON.stringify(d.events)),
+        }));
+      }
+    } catch {}
+    return JSON.parse(JSON.stringify(trip.days));
+  });
+  React.useEffect(() => {
+    try {
+      const slim = days.map(d => ({ events: d.events }));
+      localStorage.setItem(SCHED_KEY, JSON.stringify(slim));
+    } catch {}
+  }, [days]);
+
+  const updateEvent = (dayIdx, evtIdx, patch) => setDays(ds => {
+    const next = JSON.parse(JSON.stringify(ds));
+    Object.assign(next[dayIdx].events[evtIdx], patch);
+    return next;
+  });
+  const deleteEvent = (dayIdx, evtIdx) => setDays(ds => {
+    const next = JSON.parse(JSON.stringify(ds));
+    next[dayIdx].events.splice(evtIdx, 1);
+    return next;
+  });
+  const addEvent = (dayIdx) => {
+    let newIdx = 0;
+    setDays(ds => {
+      const next = JSON.parse(JSON.stringify(ds));
+      next[dayIdx].events.push({ time: '', title: 'New event', kind: 'city', note: '' });
+      newIdx = next[dayIdx].events.length - 1;
+      return next;
+    });
+    return newIdx;
+  };
+
+  const [weatherData, setWeatherData] = React.useState(null);
+  React.useEffect(() => {
+    if (!window.loadWeather) return;
+    window.loadWeather(trip.startDate, trip.endDate)
+      .then(setWeatherData)
+      .catch(err => console.warn('weather load:', err));
+  }, [trip.startDate, trip.endDate]);
+
+  const liveDays = React.useMemo(() => (
+    window.mergeWeather ? window.mergeWeather(days, weatherData) : days
+  ), [days, weatherData]);
+
+  const day = liveDays[selected];
+  const palette = window.PALETTES[day.theme];
+
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowRight') setSelected(s => Math.min(days.length - 1, s + 1));
+      if (e.key === 'ArrowLeft')  setSelected(s => Math.max(0, s - 1));
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [days.length]);
+
+  const touchRef = React.useRef({ x: 0, y: 0, t: 0 });
+  const onTouchStart = (e) => {
+    if (tab !== 'days') return;
+    const t = e.touches[0];
+    touchRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  };
+  const onTouchEnd = (e) => {
+    if (tab !== 'days') return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchRef.current.x;
+    const dy = t.clientY - touchRef.current.y;
+    if (Math.abs(dx) > 48 && Math.abs(dy) < 60 && Date.now() - touchRef.current.t < 500) {
+      if (dx < 0) setSelected(s => Math.min(days.length - 1, s + 1));
+      else setSelected(s => Math.max(0, s - 1));
+    }
+  };
+
+  React.useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', palette.deep);
+    document.body.style.background = palette.ink;
+  }, [palette]);
+
+  return (
+    <div
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      style={{
+        minHeight: '100vh',
+        minHeight: '100dvh',
+        background: palette.ink,
+        transition: 'background 600ms ease',
+        color: palette.text,
+        paddingBottom: 120,
+        position: 'relative',
+      }}>
+      {tab === 'days' && (
+        <React.Fragment>
+          <Hero day={day} palette={palette} dayIndex={selected} total={liveDays.length} units={tweaks.units}/>
+          <DayStrip days={liveDays} selected={selected} onSelect={setSelected} palette={palette} units={tweaks.units}/>
+          <Schedule day={day} dayIdx={selected} palette={palette} units={tweaks.units}
+            onUpdate={updateEvent} onDelete={deleteEvent} onAdd={addEvent} />
+          {selected === liveDays.length - 1 && (
+            <div style={{
+              margin: '20px 20px 12px', padding: '24px 20px',
+              border: `1px solid ${palette.accent}33`, borderRadius: 18,
+              background: `${palette.accent}10`, textAlign: 'center',
+            }}>
+              <div style={{ fontFamily: '"Geist Mono", ui-monospace, monospace', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: palette.sub }}>End of trip</div>
+              <div style={{ marginTop: 6, fontFamily: '"Instrument Serif", Georgia, serif', fontStyle: 'italic', fontSize: 32, color: palette.text, lineHeight: 1.05 }}>see you home</div>
+            </div>
+          )}
+        </React.Fragment>
+      )}
+      {tab === 'map' && (
+        <MapView palette={palette} days={liveDays} selected={selected} onSelect={(i) => { setSelected(i); setTab('days'); }}/>
+      )}
+      {tab === 'pack' && (
+        <PackView palette={palette} />
+      )}
+      <BottomNav tab={tab} onTab={setTab} palette={palette} />
+    </div>
+  );
+}
+
+function TweaksUI() {
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+  return (
+    <window.TweaksPanel>
+      <window.TweakSection label="Display">
+        <window.TweakRadio label="Units" value={tweaks.units}
+          options={[{ value: 'F', label: '°F' }, { value: 'C', label: '°C' }]}
+          onChange={(v) => setTweak('units', v)} />
+        <window.TweakToggle label="Ambient backdrop" value={tweaks.ambient} onChange={(v) => setTweak('ambient', v)}/>
+      </window.TweakSection>
+    </window.TweaksPanel>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.Fragment><App /><TweaksUI /></React.Fragment>
+);
+  </script>
+</body>
+</html>
